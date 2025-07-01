@@ -48,9 +48,11 @@ def rand_sleep(ms: int, variance: float = 0.2) -> asyncio.Future:
 
 
 async def fetch_usernames() -> list[str]:
-    resp = supabase.table("instagram_accounts").select("username").execute()
-    if resp.error:
-        raise RuntimeError(f"Supabase fetch error: {resp.error.message}")
+    try:
+        resp = supabase.table("instagram_accounts").select("username").execute()
+    except Exception as err:
+        raise RuntimeError(f"Supabase fetch error: {err}") from err
+
     return [acc["username"] for acc in resp.data if acc.get("username")]
 
 
@@ -118,7 +120,8 @@ async def main() -> None:
                     prev_count = count
 
             reels = await page.evaluate(
-                """
+                r"""
+
             (username) => {
                 const formatNumber = (text) => {
                     if (!text) return 0;
@@ -168,27 +171,19 @@ async def main() -> None:
 
             for winner in over_performed:
                 try:
-                    resp = (
-                        supabase.table("winner_reels")
-                        .upsert(
-                            {
-                                "username": winner["username"],
-                                "link": winner["link"],
-                                "views": winner["views"],
-                                "likes": winner["likes"],
-                                "comments": winner["comments"],
-                            },
-                            on_conflict="link",
-                        )
-                        .execute()
-                    )
-                    if resp.error:
-                        print(
-                            f"❌ Supabase insert hatası ({winner['link']}):",
-                            resp.error.message,
-                        )
-                    else:
-                        print(f"✅ Supabase'e eklendi/güncellendi: {winner['link']}")
+                    supabase.table("winner_reels").upsert(
+                        {
+                            "username": winner["username"],
+                            "link": winner["link"],
+                            "views": winner["views"],
+                            "likes": winner["likes"],
+                            "comments": winner["comments"],
+                        },
+                        on_conflict="link",
+                    ).execute()
+
+                    print(f"✅ Supabase'e eklendi/güncellendi: {winner['link']}")
+
                 except Exception as err:
                     print(f"❌ Supabase hata: {err}")
 
