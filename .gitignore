@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# Playwright
+playwright*/*-report/
+
+# Node
+node_modules/
