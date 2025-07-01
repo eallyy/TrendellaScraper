@@ -121,6 +121,7 @@ async def main() -> None:
 
             reels = await page.evaluate(
                 r"""
+
             (username) => {
                 const formatNumber = (text) => {
                     if (!text) return 0;
@@ -182,6 +183,7 @@ async def main() -> None:
                     ).execute()
 
                     print(f"✅ Supabase'e eklendi/güncellendi: {winner['link']}")
+
                 except Exception as err:
                     print(f"❌ Supabase hata: {err}")
 
